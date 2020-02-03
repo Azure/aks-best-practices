@@ -241,13 +241,13 @@ $ curl http://10.240.0.12:9200/_cluster/state?pretty
 ....
 
 #put a document and search for it 
-$ curl -X PUT "192.168.30.13:9200/customer/_doc/1?pretty" -H 'Content-Type: application/json' -d'
+$ curl -X PUT "10.240.0.12:9200/customer/_doc/1?pretty" -H 'Content-Type: application/json' -d'
 {
   "name": "John Doe"
 }
 '
 
-$ curl -X GET "192.168.30.13:9200/customer/_doc/1?pretty"
+$ curl -X GET "10.240.0.12:9200/customer/_doc/1?pretty"
 
 ```
 
