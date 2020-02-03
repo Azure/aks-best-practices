@@ -1,0 +1,47 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: {{ template "deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: {{ include "elasticsearch.metrics.fullname" . }}
+  labels: {{- include "elasticsearch.labels" . | nindent 4 }}
+    role: metrics
+spec:
+  selector:
+    matchLabels: {{- include "elasticsearch.matchLabels" . | nindent 6 }}
+      role: metrics
+  replicas: 1
+  template:
+    metadata:
+      labels: {{- include "elasticsearch.labels" . | nindent 8 }}
+        role: metrics
+      {{- with .Values.metrics.podAnnotations }}
+      annotations: {{ toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+{{- include "elasticsearch.imagePullSecrets" . | indent 6 }}
+      containers:
+        - name: metrics
+          image: {{ include "elasticsearch.metrics.image" . }}
+          imagePullPolicy: {{ .Values.metrics.image.pullPolicy | quote }}
+          args:
+            - --es.uri=http://{{ template "elasticsearch.coordinating.fullname" . }}:{{ .Values.coordinating.service.port }}
+            - --es.all
+          ports:
+            - name: metrics
+              containerPort: 9114
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+          {{- if .Values.metrics.resources }}
+          resources: {{- toYaml .Values.metrics.resources | nindent 12 }}
+          {{- end }}
+{{- end }}
